@@ -27,7 +27,8 @@ class RedirectController extends Controller
     public function store(StoreValidateRequest $request)
     {
         $data = $request->all();
-        return $this->redirectModel->createRedirect($data);
+        $validated = $request->safe()->only(['url_destino']);
+        return $this->redirectModel->createRedirect($validated);
     }
 
     public function update(updateValidateRequest $request, $code)
