@@ -15,6 +15,8 @@ return new class extends Migration
     {
         Schema::create('redirect_logs', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('redirect_id');
+            $table->foreign('redirect_id')->references('id')->on('redirects')->onDelete('cascade');
             $table->string('user_ip');
             $table->string('user_agent');
             $table->string('header_refer')->nullable();

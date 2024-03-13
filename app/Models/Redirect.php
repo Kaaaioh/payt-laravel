@@ -44,4 +44,11 @@ class Redirect extends Model
         $redirect->delete();
         return $redirect;
     }
+
+    public function getByCode($code)
+    {
+        $redirect = Redirect::whereNull('deleted_at')
+            ->where('code', $code)->firstOrFail();
+        return $redirect;
+    }
 }
