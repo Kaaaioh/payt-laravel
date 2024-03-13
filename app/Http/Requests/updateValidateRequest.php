@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreValidateRequest extends FormRequest
+class updateValidateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,7 +24,9 @@ class StoreValidateRequest extends FormRequest
      */
     public function rules()
     {
-        $rules = [
+
+        return  [
+            'status' => 'required|in:ativo,inativo',
             'url_destino' => [
                 'required', 'url', 'regex:/^https:/',
                 function ($attribute, $value, $fail) {
@@ -46,7 +48,12 @@ class StoreValidateRequest extends FormRequest
                 }
             ],
         ];
+    }
 
-        return $rules;
+    public function messages()
+    {
+        return [
+            'status.in' => 'O status só pode ser definido como ativo ou inativo',
+        ];
     }
 }

@@ -8,6 +8,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\ConnectionException;
 use App\Http\Requests\StoreValidateRequest;
+use App\Http\Requests\updateValidateRequest;
 
 class RedirectController extends Controller
 {
@@ -29,16 +30,15 @@ class RedirectController extends Controller
         return $this->redirectModel->createRedirect($data);
     }
 
-    public function update(Request $request, $code)
+    public function update(updateValidateRequest $request, $code)
     {
         $data = $request->all();
-        return $this->redirectModel->updateRedirect($code, $data);
+        $validated = $request->safe()->only(['status', 'url_destino']);
+        return $this->redirectModel->updateRedirect($code, $validated);
     }
 
     public function destroy($code)
     {
-
-
         return $this->redirectModel->deleteRedirect($code);
     }
 }

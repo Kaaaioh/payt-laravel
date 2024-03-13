@@ -15,8 +15,8 @@ return new class extends Migration
     {
         Schema::create('redirects', function (Blueprint $table) {
             $table->id();
-            $table->string('code');
-            $table->integer('status');
+            $table->string('code')->nullable();
+            $table->string('status')->default('ativo');
             $table->string('url_destino');
             $table->timestamp('last_access')->nullable();
             $table->softDeletes();
