@@ -10,25 +10,31 @@ use Hashids\Hashids;
 class Redirect extends Model
 {
     use HasFactory;
+    use SoftDeletes;
     protected $table = 'redirects';
-    protected $fillable = ['code', 'status', 'url_destino', 'last_access'];
+    protected $fillable = ['code', 'status', 'url_destino', 'last_access, created_at, updated_at'];
 
-    public function list()
+    public function listRedirect()
     {
-        return "list";
-        return Redirect::select('code', 'status', 'url_destino', 'last_access')->get();
+        return Redirect::select('code', 'status', 'url_destino', 'last_access', 'created_at', 'updated_at')
+            ->whereNull('deleted_at')
+            ->get();
     }
 
-    public function createOrUpdateRedirect($data)
+    public function createRedirect($data)
     {
-        return "createOrUpdateRedirect";
-        if (isset($data['code'])) {
-            $redirect = Redirect::where('code', $code)->firstOrFail();
-            $redirect->update($data);
-        } else {
-            $redirect = Redirect::create($data);
-        }
+        $hash = new Hashids('DBAMDASMDALVMÇREPGJOERGPÇSM');
+        $redirect = Redirect::create($data);
+        $code = $hash->encode($redirect->id);
+        $redirect->update(['code' => $code]);
 
+        return $redirect;
+    }
+
+    public function updateRedirect($code, $data)
+    {
+        $redirect = Redirect::where('code', $code)->firstOrFail();
+        $redirect->update($data);
         return $redirect;
     }
 
@@ -38,7 +44,4 @@ class Redirect extends Model
         $redirect->delete();
         return $redirect;
     }
-
-
-
 }

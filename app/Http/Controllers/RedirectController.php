@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Redirect;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Client\ConnectionException;
+use App\Http\Requests\StoreValidateRequest;
 
 class RedirectController extends Controller
 {
@@ -16,10 +20,10 @@ class RedirectController extends Controller
 
     public function index()
     {
-        return $this->redirectModel->list();
+        return $this->redirectModel->listRedirect();
     }
 
-    public function store(Request $request)
+    public function store(StoreValidateRequest $request)
     {
         $data = $request->all();
         return $this->redirectModel->createRedirect($data);
@@ -28,11 +32,13 @@ class RedirectController extends Controller
     public function update(Request $request, $code)
     {
         $data = $request->all();
-        return $this->redirectModel->createOrUpdateRedirect($code, $data);
+        return $this->redirectModel->updateRedirect($code, $data);
     }
 
     public function destroy($code)
     {
+
+
         return $this->redirectModel->deleteRedirect($code);
     }
 }
