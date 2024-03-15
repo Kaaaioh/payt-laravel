@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\ConnectionException;
 use App\Http\Requests\StoreValidateRequest;
 use App\Http\Requests\updateValidateRequest;
+use Illuminate\Support\Facades\DB;
 
 class RedirectController extends Controller
 {
@@ -23,12 +24,11 @@ class RedirectController extends Controller
     public function redirect(Request $request, $code)
     {
         $redirect_info = $this->redirectModel->getByCode($code);
-
+        $redirectLog = new RedirectLog();
         $ip = $request->ip();
         $user_agent = $request->userAgent();
         $referer = $request->header('referer');
         $query_params  = $request->getQueryString();
-
         $data_insert =
             [
                 'user_ip' =>  $ip,
@@ -37,11 +37,12 @@ class RedirectController extends Controller
                 'header_refer' =>  $referer,
                 'query_params' => $query_params
             ];
-        $redirectLog = new RedirectLog();
+
         $redirectLog->saveLog($data_insert);
 
         return redirect($redirect_info["url_destino"]);
     }
+
     public function index()
     {
         return $this->redirectModel->listRedirect();
@@ -66,5 +67,53 @@ class RedirectController extends Controller
         return $this->redirectModel->deleteRedirect($code);
     }
 
+    public function logs(Request $request)
+    {
+        $redirectCode = $request->route('redirect');
 
+        $redirectLogs = RedirectLog::select('*')
+            ->join('redirects', 'redirects.id', 'redirect_logs.redirect_id')
+            ->where('redirects.code', $redirectCode)
+            ->get();
+        return $redirectLogs;
+    }
+
+
+    public function stats(Request $request)
+    {
+        $redirectCode = $request->route('redirect');
+
+        $total_accesses = RedirectLog::join('redirects', 'redirects.id', 'redirect_logs.redirect_id')
+            ->where('redirects.code', $redirectCode)
+            ->count();
+
+        $uniques_accesses = RedirectLog::join('redirects', 'redirects.id', 'redirect_logs.redirect_id')
+            ->where('redirects.code', $redirectCode)
+            ->distinct('user_ip')
+            ->count('user_ip');
+
+        $top_referrers = RedirectLog::join('redirects', 'redirects.id', 'redirect_logs.redirect_id')
+            ->where('redirects.code', $redirectCode)
+            ->whereNotNull('header_refer')
+            ->select('header_refer', DB::raw('COUNT(*) as count'))
+            ->groupBy('header_refer')
+            ->orderByDesc('count')
+            ->limit(10)
+            ->get();
+
+        $last_10_days_access = RedirectLog::join('redirects', 'redirects.id', 'redirect_logs.redirect_id')
+            ->where('redirects.code', $redirectCode)
+            ->whereDate('redirect_logs.created_at', '>=', now()->subDays(10))
+            ->selectRaw('DATE(redirect_logs.created_at) as date, COUNT(*) as total, COUNT(DISTINCT redirect_logs.user_ip) as unique_ips')
+            ->groupByRaw('DATE(redirect_logs.created_at)')
+            ->orderBy('date')
+            ->get();
+
+        return [
+            'total_accesses' => $total_accesses,
+            'acessos_unicos' => $uniques_accesses,
+            'top_referrers' => $top_referrers,
+            'acessos_ultimos_10_dias' => $last_10_days_access
+        ];
+    }
 }

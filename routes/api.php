@@ -10,3 +10,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::resource('redirects', RedirectController::class);
+
+Route::get('redirects/{redirect}/logs', [RedirectController::class, 'logs']);
+Route::get('redirects/{redirect}/stats', [RedirectController::class, 'stats']);

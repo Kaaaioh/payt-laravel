@@ -26,7 +26,7 @@ class updateValidateRequest extends FormRequest
     {
 
         return  [
-            'status' => 'required|in:ativo,inativo',
+            'status' => 'in:ativo,inativo',
             'url_destino' => [
                 'required', 'url', 'regex:/^https:/',
                 function ($attribute, $value, $fail) {
